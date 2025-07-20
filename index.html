@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Угадай слово</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #ffffff;
+      color: #000000;
+      text-align: center;
+      padding: 40px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    #wordInputSection,
+    #gameSection {
+      padding: 30px;
+      border-radius: 10px;
+      display: inline-block;
+      min-width: 300px;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      padding: 10px;
+      font-size: 18px;
+      border: 2px solid #000;
+      background-color: #fff;
+      color: #000;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      width: 200px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #000;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background-color: #444;
+    }
+
+    .letter-box {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      margin: 2px;
+      border: 2px solid #000;
+      font-size: 24px;
+      line-height: 40px;
+      vertical-align: middle;
+      border-radius: 2px;
+    }
+
+    #hp {
+      font-size: 18px;
+      margin: 15px 0;
+    }
+
+    #message {
+      font-size: 22px;
+      margin-top: 20px;
+    }
+
+    #restartButton {
+      margin-top: 20px;
+      display: none;
+    }
+
+    #wordDisplay {
+      display: flex;
+      justify-content: center;
+      flex-wrap: nowrap;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="wordInputSection">
+    <h2>Загадай слово</h2>
+    <input type="password" id="hiddenWord" placeholder="Введите слово">
+    <br>
+    <button onclick="startGame()">Начать игру</button>
+  </div>
+
+  <div id="gameSection" style="display: none;">
+    <div id="wordDisplay"></div>
+    <div id="hp">HP: 10/10</div>
+    <input type="text" id="letterInput" maxlength="1" placeholder="Введите букву">
+    <button onclick="guessLetter()">Угадать</button>
+    <div id="message"></div>
+    <button id="restartButton" onclick="restartGame()">Начать заново</button>
+  </div>
+
+  <script>
+    let secretWord = '';
+    let revealedWord = [];
+    let guessedLetters = [];
+    let hp = 10;
+
+    function startGame() {
+      const input = document.getElementById('hiddenWord').value.trim().toLowerCase();
+      if (!input || input.length < 2) {
+        alert('Введите слово от 2 букв!');
+        return;
+      }
+
+      secretWord = input;
+      revealedWord = Array(secretWord.length).fill('');
+      guessedLetters = [];
+      hp = 10;
+
+      document.getElementById('wordInputSection').style.display = 'none';
+      document.getElementById('gameSection').style.display = 'block';
+      document.getElementById('letterInput').disabled = false;
+      document.getElementById('message').textContent = '';
+      document.getElementById('restartButton').style.display = 'none';
+
+      updateWordDisplay();
+      updateHP();
+    }
+
+    function updateWordDisplay() {
+      const wordDisplay = document.getElementById('wordDisplay');
+      wordDisplay.innerHTML = '';
+      for (let letter of revealedWord) {
+        const box = document.createElement('div');
+        box.className = 'letter-box';
+        box.textContent = letter ? letter.toUpperCase() : '';
+        wordDisplay.appendChild(box);
+      }
+    }
+
+    function updateHP() {
+      document.getElementById('hp').textContent = `HP: ${hp}/10`;
+    }
+
+    function guessLetter() {
+      const input = document.getElementById('letterInput');
+      const letter = input.value.toLowerCase();
+      input.value = '';
+
+      if (!letter.match(/[а-яёa-z]/i)) {
+        alert('Введите одну букву!');
+        return;
+      }
+
+      if (guessedLetters.includes(letter)) {
+        alert('Вы уже вводили эту букву.');
+        return;
+      }
+
+      guessedLetters.push(letter);
+
+      let correct = false;
+      for (let i = 0; i < secretWord.length; i++) {
+        if (secretWord[i] === letter) {
+          revealedWord[i] = letter;
+          correct = true;
+        }
+      }
+
+      if (!correct) {
+        hp--;
+        updateHP();
+      } else {
+        updateWordDisplay();
+      }
+
+      checkGameStatus();
+    }
+
+    function checkGameStatus() {
+      if (hp <= 0) {
+        document.getElementById('message').textContent = '❌ Вы проиграли! Слово было: ' + secretWord.toUpperCase();
+        document.getElementById('letterInput').disabled = true;
+        document.getElementById('restartButton').style.display = 'inline-block';
+      } else if (!revealedWord.includes('')) {
+        document.getElementById('message').textContent = '✅ Вы угадали слово!';
+        document.getElementById('letterInput').disabled = true;
+        document.getElementById('restartButton').style.display = 'inline-block';
+      }
+    }
+
+    function restartGame() {
+      document.getElementById('hiddenWord').value = '';
+      document.getElementById('wordInputSection').style.display = 'block';
+      document.getElementById('gameSection').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>
